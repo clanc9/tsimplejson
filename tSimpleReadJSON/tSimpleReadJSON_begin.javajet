@@ -1,0 +1,73 @@
+<%@ jet
+imports="
+    org.talend.core.model.process.INode
+    org.talend.core.model.process.ElementParameterParser
+    org.talend.core.model.metadata.IMetadataColumn
+    org.talend.core.model.metadata.IMetadataTable
+    org.talend.core.model.process.IConnection
+    org.talend.core.model.process.IConnectionCategory
+    org.talend.designer.codegen.config.CodeGeneratorArgument
+    java.util.List
+    java.util.Map
+"
+%>
+
+
+  <%
+  	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+  	INode node = (INode)codeGenArgument.getArgument();
+  	String cid = node.getUniqueName();
+%>
+
+    String errorValidation_<%=cid%> = "";
+    com.fasterxml.jackson.databind.ObjectMapper mapper_<%=cid%> = new com.fasterxml.jackson.databind.ObjectMapper();
+
+  <%
+    String inputJsonColumn = ElementParameterParser.getValue(node, "__INPUT_JSON_COLUMN__");
+    String inputJsonColumnType = "";
+    if (inputJsonColumn != null && inputJsonColumn.length() > 0) {
+        List<? extends IConnection> inConns = node.getIncomingConnections();
+        List<IMetadataColumn> inCols = null;
+        if(inConns != null && inConns.size() > 0) {
+            for(IConnection inConn : inConns) {
+                if(inConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+                    IMetadataTable metadata = inConn.getMetadataTable();
+                    inCols = metadata.getListColumns();
+                    break;
+                }
+            }
+        }
+        if (inCols != null) {
+            for (IMetadataColumn col : inCols) {
+                if (col.getLabel().equals(inputJsonColumn)) {
+                      inputJsonColumnType = col.getTalendType();
+                      break;
+                }
+            }
+        }
+    }
+
+    if (!inputJsonColumnType.equals("id_String")) { %>
+          errorValidation_<%=cid%> = "The data type of the input JSON column must be String.";
+  <%  }
+
+    String datePatternInJson = ElementParameterParser.getValue(node, "__DATE_PATTERN_IN_JSON__");
+    if (datePatternInJson != null && datePatternInJson.length() > 0 && !datePatternInJson.equals("\"\"")) {
+        //
+        // TO DO
+        // validateDatePattern
+        //
+    }
+    else {  %>
+          System.out.println(" WARNING : the default pattern of dates in the JSON string is missing.");
+<%  }
+
+    %>
+
+   if (errorValidation_<%=cid%>.length() > 0) {
+        throw new Exception(errorValidation_<%=cid%>);
+   }
+
+   int nb_line_<%=cid%> = 0;
+   int nb_line_ok_<%=cid%> = 0;
+   int nb_line_reject_<%=cid%> = 0;

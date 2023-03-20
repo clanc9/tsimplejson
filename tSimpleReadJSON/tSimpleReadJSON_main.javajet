@@ -1,0 +1,285 @@
+<%@ jet
+imports="
+      org.talend.core.model.process.IConnection
+      org.talend.core.model.process.INode
+      org.talend.core.model.metadata.IMetadataTable
+      org.talend.core.model.process.ElementParameterParser
+      org.talend.core.model.metadata.IMetadataColumn
+      org.talend.designer.codegen.config.CodeGeneratorArgument
+      org.talend.core.model.process.IConnectionCategory
+      java.util.List
+      java.util.Map
+      java.util.HashMap
+      java.util.HashSet
+      java.util.Set
+      java.util.ArrayList
+"
+%>
+
+<%
+CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+INode node = (INode)codeGenArgument.getArgument();
+String cid = node.getUniqueName();
+
+String incomingConnName = null;
+List<? extends IConnection> inConns = node.getIncomingConnections();
+Set<String> inColumnSet = new HashSet<String>();
+if(inConns != null && inConns.size() > 0) {
+    for(IConnection inConn : inConns) {
+        if(inConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+            incomingConnName = inConn.getName();
+            IMetadataTable inputMetadataTable = inConn.getMetadataTable();
+            for (IMetadataColumn inputCol : inputMetadataTable.getListColumns()) {
+                if (inputCol != null) {
+                    inColumnSet.add(inputCol.getLabel());
+                }
+            }
+            break;
+        }
+    }
+}
+
+String inputJsonColumn = ElementParameterParser.getValue(node, "__INPUT_JSON_COLUMN__");
+
+ArrayList<String> excludedColumns = new ArrayList<String>();
+List<Map<String, String>> excludedColumnsParams = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__COLUMNS_TO_EXCLUDE__");
+for (Map<String, String> excludedColParam : excludedColumnsParams) {
+      String col = excludedColParam.get("OUTPUT_COLUMN");
+      if (col.length() > 0) {
+          excludedColumns.add(col);
+     }
+}
+
+
+String excludeInputJsonColumnStr = ElementParameterParser.getValue(node, "__EXCLUDE_INPUT_JSON_COLUMN__");
+boolean excludeInputJsonColumn = (excludeInputJsonColumnStr!=null&&!("").equals(excludeInputJsonColumnStr))?("true").equals(excludeInputJsonColumnStr):false;
+if (excludeInputJsonColumn && inputJsonColumn != null && inputJsonColumn.length() > 0) {
+    excludedColumns.add(inputJsonColumn);
+}
+
+String rejectOnExceptionStr = ElementParameterParser.getValue(node, "__REJECT_ON_EXCEPTION__");
+boolean rejectOnException = (rejectOnExceptionStr!=null&&!("").equals(rejectOnExceptionStr))?("true").equals(rejectOnExceptionStr):false;
+
+String dieOnExceptionStr = ElementParameterParser.getValue(node, "__DIE_ON_EXCEPTION__");
+boolean dieOnException = (dieOnExceptionStr!=null&&!("").equals(dieOnExceptionStr))?("true").equals(dieOnExceptionStr):false;
+
+String decimalSeparator = ".";
+String decimalSeparatorParam = ElementParameterParser.getValue(node, "__DECIMAL_SEPARATOR__");
+if (decimalSeparatorParam != null && decimalSeparatorParam.length() == 1) {
+    decimalSeparator = decimalSeparatorParam;
+}
+
+String datePatternInJson = "yyyy-MM-dd HH:mm:ss";
+String datePatternInJsonParam = ElementParameterParser.getValue(node, "__DATE_PATTERN_IN_JSON__");
+if (datePatternInJsonParam != null && datePatternInJsonParam.length() > 0) {
+    datePatternInJson = datePatternInJsonParam;
+}
+
+%>
+
+com.fasterxml.jackson.databind.JsonNode inputJson_<%=cid%> = null;
+String exceptionRaisedMessage_<%=cid%> = null;
+
+
+try {
+    if (<%=incomingConnName%>.<%=inputJsonColumn%> != null) {
+        String inputJsonStr_<%=cid%> = <%=incomingConnName%>.<%=inputJsonColumn%>.toString();
+        if (inputJsonStr_<%=cid%>.length() > 0) {
+            inputJson_<%=cid%> = mapper_<%=cid%>.readTree(inputJsonStr_<%=cid%>);
+        }
+    }
+}
+catch (Exception e) {
+    if (<%=dieOnException%>) {
+        throw e;
+    }
+    else if (<%=rejectOnException%>) {
+        exceptionRaisedMessage_<%=cid%> = "Invalid input JSON string : " + e.getMessage();
+    }
+}
+
+<%
+
+List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
+if(outgoingConns != null && outgoingConns.size() > 0) {
+    for(IConnection outgoingConn : outgoingConns) {
+        if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) { %>
+            <%=outgoingConn.getName()%> = null;
+    <%  }
+    }
+}
+
+String outgoingConnJSONName = null;
+List<? extends IConnection> outgoingConnsJSON = node.getOutgoingConnections("JSON");
+if (outgoingConnsJSON != null && outgoingConnsJSON.size() > 0) {
+    for (IConnection outgoingConnJSON : outgoingConnsJSON) {
+        if (outgoingConnJSON.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+              outgoingConnJSONName = outgoingConnJSON.getName();
+              break;
+        }
+    }
+}
+
+String outgoingConnRejectName = null;
+List<? extends IConnection> outgoingConnsReject = node.getOutgoingConnections("REJECT");
+if (outgoingConnsReject != null && outgoingConnsReject.size() > 0) {
+    for (IConnection outgoingConnReject : outgoingConnsReject) {
+        if (outgoingConnReject.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+              outgoingConnRejectName = outgoingConnReject.getName();
+              break;
+        }
+    }
+}
+
+List<IMetadataColumn> columnList = null;
+List<IMetadataTable> metadatas = node.getMetadataList();
+if(metadatas != null && metadatas.size() > 0) {
+    IMetadataTable metadata = metadatas.get(0);
+    if(metadata != null) {
+        columnList = metadata.getListColumns();
+    }
+}
+
+if(incomingConnName != null && columnList != null && columnList.size() > 0) {  %>
+
+  if (exceptionRaisedMessage_<%=cid%> == null) {
+  <%  if (outgoingConnJSONName != null && outgoingConnJSONName.length() > 0) {  %>
+
+          <%=outgoingConnJSONName%> = new <%=outgoingConnJSONName%>Struct();
+
+          if (inputJson_<%=cid%> == null) {
+                inputJson_<%=cid%> = mapper_<%=cid%>.readTree("{}");
+          }
+    <%
+         for(int i = 0 ; i < columnList.size() ; i++) {
+             String colLabel = columnList.get(i).getLabel();
+             boolean found = false;
+             if (!(excludedColumns.contains(colLabel))) {
+                   String type = columnList.get(i).getTalendType(); %>
+
+                   com.fasterxml.jackson.databind.JsonNode node_<%=cid%>_<%=i%> = inputJson_<%=cid%>.get("<%=colLabel%>");
+      //           System.out.println("<%=colLabel%> : " + (node_<%=cid%>_<%=i%> == null ? "non json" : "oui json"));
+
+                   if (node_<%=cid%>_<%=i%> != null && node_<%=cid%>_<%=i%>.isValueNode()) {
+                    <% found = true;  %>
+                       //columnsFoundInJson_<%=cid%>.add("<%=colLabel%>");
+               //      System.out.println("<%=colLabel%> trouvé");
+               //      System.out.println("null : " + node_<%=cid%>_<%=i%>.isNull());
+                       if (node_<%=cid%>_<%=i%>.isNull()) {
+                           <%=outgoingConnJSONName%>.<%=colLabel%> = null;
+                       }
+                       else {
+                           <%  if (type.equals("id_String") || type.equals("id_Character")) { %>
+                                   <%=outgoingConnJSONName%>.<%=colLabel%> = node_<%=cid%>_<%=i%>.asText();
+                           <%  }
+                               else {  %>
+                                   String node_asText_<%=cid%>_<%=i%> = node_<%=cid%>_<%=i%>.asText().trim();
+                                   if (node_asText_<%=cid%>_<%=i%>.length() == 0) {
+                                       <%=outgoingConnJSONName%>.<%=colLabel%> = null;
+                                   }
+                                   else {
+                                 <%    if (type.equals("id_Integer") || type.equals("id_Short") || type.equals("id_Long") || type.equals("id_Float") || type.equals("id_Double")) {
+                                           String convert = type.replace("id_", ""); %>
+                                           try {
+                                               <%=outgoingConnJSONName%>.<%=colLabel%> = <%=convert%>.valueOf(node_<%=cid%>_<%=i%>.asText().replace("<%=decimalSeparator%>", "."));
+                                           }
+                                           catch (Exception e) {
+                                               <%=outgoingConnJSONName%>.<%=colLabel%> =  null;
+                                               if (<%=dieOnException%>) {
+                                                   throw e;
+                                               }
+                                               else if (<%=rejectOnException%>) {
+                                                   exceptionRaisedMessage_<%=cid%> = "Invalid number of value in input JSON: " + e.getMessage();
+                                               }
+                                           }
+                                 <%    }
+                                       else if (type.equals("id_Boolean")) { %>
+                                           if (node_asText_<%=cid%>_<%=i%>.equals("true") || node_asText_<%=cid%>_<%=i%>.equals("1")) {
+                                                <%=outgoingConnJSONName%>.<%=colLabel%>  = true;
+                                           }
+                                           else if (node_asText_<%=cid%>_<%=i%>.equals("false") || node_asText_<%=cid%>_<%=i%>.equals("0")) {
+                                                <%=outgoingConnJSONName%>.<%=colLabel%>  = false;
+                                           }
+                                           else {
+                                                <%=outgoingConnJSONName%>.<%=colLabel%>  = null;
+                                               if (<%=dieOnException%>) {
+                                                   throw new Exception("Invalid boolean value in input JSON.");
+                                               }
+                                               else if (<%=rejectOnException%>) {
+                                                   exceptionRaisedMessage_<%=cid%> = "Invalid boolean value in input JSON.";
+                                               }
+                                           }
+                                 <%    }
+                                       else if (type.equals("id_BigDecimal")) { %>
+                                           try {
+                                                <%=outgoingConnJSONName%>.<%=colLabel%>  = new java.math.BigDecimal(node_asText_<%=cid%>_<%=i%>.replace("<%=decimalSeparator%>", "."));
+                                           }
+                                           catch (Exception e) {
+                                                <%=outgoingConnJSONName%>.<%=colLabel%>  = null;
+                                               if (<%=dieOnException%>) {
+                                                   throw e;
+                                               }
+                                               else if (<%=rejectOnException%>) {
+                                                   exceptionRaisedMessage_<%=cid%> = "Invalid Big Decimal value in input JSON: " + e.getMessage();
+                                               }
+                                           }
+                                 <%    }
+                                       else if (type.equals("id_Date")) { %>
+                                           if (TalendDate.isDate(node_asText_<%=cid%>_<%=i%>, <%=datePatternInJson%>)) {
+                                               <%=outgoingConnJSONName%>.<%=colLabel%> = TalendDate.parseDate(<%=datePatternInJson%>, node_asText_<%=cid%>_<%=i%>);
+                                           }
+                                           else {
+                                                <%=outgoingConnJSONName%>.<%=colLabel%>  = null;
+                                               if (<%=dieOnException%>) {
+                                                   throw new Exception("Invalid date value in input JSON.");
+                                               }
+                                               else if (<%=rejectOnException%>) {
+                                                   exceptionRaisedMessage_<%=cid%> = "Invalid date value in input JSON.";
+                                               }
+                                           }
+                               <%      } %>
+                                    }
+                             <% }  %>
+                           }
+                       }
+         <%
+               }
+               if (!found) {
+                   if (inColumnSet.contains(colLabel)) {  %>
+                       <%=outgoingConnJSONName%>.<%=colLabel%> = <%=incomingConnName%>.<%=colLabel%>;
+                 <%    }
+                   else {  %>
+                       <%=outgoingConnJSONName%>.<%=colLabel%> = null;
+                 <%    }
+               }
+          }  // fin for i
+
+      }  %>
+
+
+  }
+
+  if (exceptionRaisedMessage_<%=cid%> != null) {
+        nb_line_reject_<%=cid%>++;
+    <%  if (outgoingConnJSONName != null && outgoingConnJSONName.length() > 0) {  %>
+            <%=outgoingConnJSONName%> = null;
+    <%  }
+        if (outgoingConnRejectName != null && outgoingConnRejectName.length() > 0) { %>
+            <%=outgoingConnRejectName%> = new <%=outgoingConnRejectName%>Struct();
+            <%=outgoingConnRejectName%>.errorMessage = exceptionRaisedMessage_<%=cid%>;
+      <%    for(int j = 0 ; j < columnList.size() ; j++) {
+                String colLabelBis = columnList.get(j).getLabel();
+                if (inColumnSet.contains(colLabelBis)) { %>
+                    <%=outgoingConnRejectName%>.<%=colLabelBis%> = <%=incomingConnName%>.<%=colLabelBis%>;
+            <%  }
+                else if (!(colLabelBis.equals("errorMessage"))) {  %>
+                    <%=outgoingConnRejectName%>.<%=colLabelBis%> = null;
+            <%  }
+           }
+      }  %>
+  }
+
+<%
+}
+%>
+nb_line_<%=cid%>++ ;

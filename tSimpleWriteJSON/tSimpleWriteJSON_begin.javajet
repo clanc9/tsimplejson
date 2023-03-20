@@ -1,0 +1,46 @@
+<%@ jet
+imports="
+    org.talend.core.model.process.INode
+    org.talend.core.model.process.ElementParameterParser
+    org.talend.core.model.metadata.IMetadataColumn
+    org.talend.core.model.metadata.IMetadataTable
+    org.talend.core.model.process.IConnection
+    org.talend.core.model.process.IConnectionCategory
+    org.talend.designer.codegen.config.CodeGeneratorArgument
+    java.util.List
+    java.util.Map
+"
+%>
+
+  // début de json simple
+
+  <%
+  	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+  	INode node = (INode)codeGenArgument.getArgument();
+  	String cid = node.getUniqueName();
+
+    String includeAllColumnsStr = ElementParameterParser.getValue(node, "__INCLUDE_ALL_COLUMNS__");
+    boolean includeAllColumns = (includeAllColumnsStr!=null&&!("").equals(includeAllColumnsStr))?("true").equals(includeAllColumnsStr):false;
+
+    String validationErrorMessage = "";
+    if (!includeAllColumns) {
+        List<Map<String, String>> selectedCols = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__COLUMNS_TO_INCLUDE__");
+        if (selectedCols.size() == 0) {
+              validationErrorMessage = "At least one column must be included in the JSON string.";
+        }
+        else {
+            for (Map<String, String> selectedCol : selectedCols) {
+                  String col = selectedCol.get("INPUT_COLUMN");
+                  if (col.length() == 0) {
+                      validationErrorMessage = "A column name must be specified as input column.";
+                 }
+            }
+        }
+   }
+
+%>
+
+   if ("<%=validationErrorMessage%>".length() > 0) {
+        throw new Exception("<%=validationErrorMessage%>");
+   }
+   int nb_line_<%=cid%> = 0;

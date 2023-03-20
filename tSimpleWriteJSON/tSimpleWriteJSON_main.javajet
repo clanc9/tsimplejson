@@ -1,0 +1,186 @@
+<%@ jet
+imports="
+      org.talend.core.model.process.IConnection
+      org.talend.core.model.process.INode
+      org.talend.core.model.metadata.IMetadataTable
+      org.talend.core.model.process.ElementParameterParser
+      org.talend.core.model.metadata.IMetadataColumn
+      org.talend.designer.codegen.config.CodeGeneratorArgument
+      org.talend.core.model.process.IConnectionCategory
+      java.util.List
+      java.util.Map
+      java.util.HashMap
+"
+%>
+
+<%
+CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+INode node = (INode)codeGenArgument.getArgument();
+String cid = node.getUniqueName();
+
+String incomingConnName = null;
+List<? extends IConnection> inConns = node.getIncomingConnections();
+if(inConns != null && inConns.size() > 0) {
+    for(IConnection inConn : inConns) {
+        if(inConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+            incomingConnName = inConn.getName();
+            break;
+        }
+    }
+}
+
+List<IMetadataColumn> columnList = null;
+List<IMetadataTable> metadatas = node.getMetadataList();
+if(metadatas != null && metadatas.size() > 0) {
+    IMetadataTable metadata = metadatas.get(0);
+    if(metadata != null) {
+        columnList = metadata.getListColumns();
+    }
+}
+
+String includeAllColumnsStr = ElementParameterParser.getValue(node, "__INCLUDE_ALL_COLUMNS__");
+boolean includeAllColumns = (includeAllColumnsStr!=null&&!("").equals(includeAllColumnsStr))?("true").equals(includeAllColumnsStr):false;
+boolean convertToString = false;
+boolean includeNull = false;
+boolean nullToEmpty = false;
+boolean cleanString = false;
+HashMap<String, String> columnsToInclude = new java.util.HashMap<String, String>();
+if (includeAllColumns) {
+    String convertToStringStr = ElementParameterParser.getValue(node, "__CONVERT_TO_STRING__");
+    convertToString = (convertToStringStr!=null&&!("").equals(convertToStringStr))?("true").equals(convertToStringStr):false;
+    String includeNullStr = ElementParameterParser.getValue(node, "__INCLUDE_NULL__");
+    includeNull = (includeNullStr!=null&&!("").equals(includeNullStr))?("true").equals(includeNullStr):false;
+    String nullToEmptyStr = ElementParameterParser.getValue(node, "__NULL_TO_EMPTY__");
+    nullToEmpty = (nullToEmptyStr!=null&&!("").equals(nullToEmptyStr))?("true").equals(nullToEmptyStr):false;
+    String cleanStringStr = ElementParameterParser.getValue(node, "__CLEAN_STRING__");
+    cleanString = (cleanStringStr!=null&&!("").equals(cleanStringStr))?("true").equals(cleanStringStr):false;
+
+}
+else {
+    List<Map<String, String>> selectedCols = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__COLUMNS_TO_INCLUDE__");
+    for (Map<String, String> selectedCol : selectedCols) {
+          String col = selectedCol.get("INPUT_COLUMN");
+          if (col.length() > 0) {
+              String convertToStringStr2 = selectedCol.get("COL_CONVERT_TO_STRING") == null ? "false" : selectedCol.get("COL_CONVERT_TO_STRING");
+              String includeNullStr2 = selectedCol.get("COL_INCLUDE_NULL") == null ? "false" : selectedCol.get("COL_INCLUDE_NULL");
+              String nullToEmptyStr2 = selectedCol.get("COL_NULL_TO_EMPTY") == null ? "false" : selectedCol.get("COL_NULL_TO_EMPTY");
+              String cleanStringStr2 = selectedCol.get("COL_CLEAN_STRING") == null ? "false" : selectedCol.get("COL_CLEAN_STRING");
+              String colParams = convertToStringStr2 + "," + includeNullStr2 + "," + nullToEmptyStr2 + "," + cleanStringStr2;
+              columnsToInclude.put(col, colParams);
+         }
+    }
+}
+
+String decimalSeparatorStr = ElementParameterParser.getValue(node, "__DECIMAL_SEPARATOR_IS_COMMA__");
+boolean decimalSeparatorIsComma = (decimalSeparatorStr!=null&&!("").equals(decimalSeparatorStr))?("true").equals(decimalSeparatorStr):false;
+
+
+%>
+
+String json_<%=cid%> = "{";
+java.text.DecimalFormat df_<%=cid%> = new java.text.DecimalFormat("0", java.text.DecimalFormatSymbols.getInstance(java.util.Locale.ENGLISH));
+df_<%=cid%>.setMaximumFractionDigits(340);
+
+
+<%
+
+String outgoingConnName = null;
+List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
+if(outgoingConns != null && outgoingConns.size() > 0) {
+    for(IConnection outgoingConn : outgoingConns) {
+        if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+            outgoingConnName = outgoingConn.getName();
+            break;
+        }
+    }
+}
+
+if(incomingConnName != null && outgoingConnName != null && columnList != null && columnList.size() > 0) {
+    for(int i = 0 ; i < columnList.size() ; i++) {
+        if(i == columnList.size() - 1) { %>
+            if (json_<%=cid%>.length() > 1) {
+                <%=outgoingConnName%>.<%=columnList.get(i).getLabel()%> = json_<%=cid%>.substring(0, json_<%=cid%>.length()-1) + "}";
+            }
+            else {
+                <%=outgoingConnName%>.<%=columnList.get(i).getLabel()%> = null;
+            }
+  <%   } else {
+              String attribute = columnList.get(i).getLabel();
+              boolean selectedColumn = columnsToInclude.containsKey(attribute);
+              /// construction
+              if (includeAllColumns || selectedColumn) {
+                    if (selectedColumn)  {
+                        String[] params = columnsToInclude.get(attribute).split(",");
+                        convertToString = params[0].equals("true") ? true : false;
+                        includeNull = params[1].equals("true") ? true : false;
+                        nullToEmpty = params[2].equals("true") ? true : false;
+                        cleanString = params[3].equals("true") ? true : false;
+                  %>
+                        System.out.println("---------------");
+                        System.out.println("<%=columnsToInclude%>");
+                        System.out.println("attr : <%=attribute%> / sel : <%=selectedColumn%> / convertToString : <%=convertToString%> / includeNull : <%=includeNull%> / nullToEmpty : <%=nullToEmpty%> / cleanString : <%=cleanString%>");
+                  <%
+
+                    }
+              %>
+                    if (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%> == null) {
+                    <%    if (nullToEmpty) {  %>
+                              json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"\",";
+                  <%      }
+                          else if (includeNull) {  %>
+                              json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":null,";
+                      <%   }  %>
+                    }
+                    else {
+                <%      String type = columnList.get(i).getTalendType();
+                        if (type.equals("id_String") || type.equals("id_Character")) {
+                            if (cleanString && !type.equals("id_Character")) { %>
+                                json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString().replaceAll("\"", "\\\"").replaceAll("[\\n\\r\\t]", "") + "\",";
+                      <%    }
+                            else {  %>
+                                json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString().replace("\"", "\\\"") + "\",";
+                      <%    }
+                        }
+                        else if (type.equals("id_Date")) {
+                            String pattern = columnList.get(i).getPattern();
+                            if (pattern.length() == 0) {
+                                pattern = ElementParameterParser.getValue(node, "__DEFAULT_DATE_PATTERN__");
+                            } %>
+                            json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + TalendDate.formatDate(<%=pattern%>, <%=incomingConnName%>.<%=columnList.get(i).getLabel()%>) + "\",";
+                    <%  }
+                        else {
+                            if (type.equals("id_Double") || type.equals("id_BigDecimal") || type.equals("id_Float")) {
+                                if (decimalSeparatorIsComma) { %>
+                                    json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + df_<%=cid%>.format(<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).replace(".", ",") + "\",";
+
+                        <%      }
+                                else {
+                                    if (convertToString) { %>
+                                        json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + df_<%=cid%>.format(<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>) + "\",";
+                            <%      }
+                                    else {   %>
+                                        json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":" + df_<%=cid%>.format(<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>) + ",";
+                            <%      }
+                                }
+                            }
+                            else {
+                                if (convertToString) { %>
+                                    json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString() + "\",";
+                          <%    }
+                                else {  %>
+                                    json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString() + ",";
+                          <%    }
+                            }
+                        }  %>
+                    }
+//                  System.out.println("<%=attribute%> = <%=type%>");
+
+        <%   }   %>
+
+            <%=outgoingConnName%>.<%=columnList.get(i).getLabel()%> = <%=incomingConnName%>.<%=columnList.get(i).getLabel()%>;
+<%     }
+    }
+  }
+%>
+
+nb_line_<%=cid%>++ ;
