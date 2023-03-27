@@ -45,6 +45,7 @@ These Talend components are designed for the easy manipulation of JSON strings. 
 * Talend Open Studio for Data Integration.
 To install the studio, please refer to the [Talend documentation](https://help.talend.com/r/en-US/8.0/studio-getting-started-guide-open-studio-for-data-integration/introduction).
 
+> The components were developed on version 8.0.1 of the studio.
 
 ### Installation
 
@@ -70,7 +71,7 @@ tSimpleReadJSON populates a row from an input JSON string. The component is most
 
 <br>
 
-_For more info, please refer to the [Documentation](https://github.com/clanc9/tsimplejson/tree/main/doc)_
+_For more info on how to use these components, please refer to the [Documentation](https://github.com/clanc9/tsimplejson/tree/main/doc)_
 
 <br>
 
