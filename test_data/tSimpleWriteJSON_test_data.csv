@@ -1,0 +1,7 @@
+"id","firstName","lastName","address","city","region","postalCode","phone","email","numberShort","numberInt","numberLong ","numberDouble","numberFloat","numberBigDecimal","active","createdAt"
+"1","Christian","Lanctôt",,"Drummondville","Québec","J2B 1Y5","123-456-7890","talend@clanctot.com","0","-231","1","143.75","56.24","0.000000000023","true","2023-03-12 08:45:00"
+"2","Luise",,,"Landshut","Bayern",,"+49 (0) 871 7999217",,"-10","12345","123456789012345","-4.92","-1000.23","123456789012.1234567890","true","2023-03-13 21:02:00"
+"3","Jean-François","Beaulieu",,"Montréal","Québec","H2B 0T7","456-7890",,,"10000000",,"10000","561928",,"false",
+"4",,"Durand",,"Montpellier",,"34070",,,"1234",,,"123456789.123456789","987654321.987654321",,"true","2023-03-14 12:01:45"
+"5","Damian","Knock",,"Burlington","Vermont","05408","802-540-0002","d.knock@nhjs.gov",,,,,,,"true",
+6,,,,,,,,,,,,,,,,

@@ -20,7 +20,6 @@ imports="
 %>
 
     String errorValidation_<%=cid%> = "";
-    com.fasterxml.jackson.databind.ObjectMapper mapper_<%=cid%> = new com.fasterxml.jackson.databind.ObjectMapper();
 
   <%
     String inputJsonColumn = ElementParameterParser.getValue(node, "__INPUT_JSON_COLUMN__");
@@ -52,14 +51,11 @@ imports="
   <%  }
 
     String datePatternInJson = ElementParameterParser.getValue(node, "__DATE_PATTERN_IN_JSON__");
-    if (datePatternInJson != null && datePatternInJson.length() > 0 && !datePatternInJson.equals("\"\"")) {
-        //
-        // TO DO
-        // validateDatePattern
-        //
-    }
+    if (datePatternInJson != null && datePatternInJson.replace("\"", "").length() > 0) { %>
+        // TO DO validate date pattern
+<%  }
     else {  %>
-          System.out.println(" WARNING : the default pattern of dates in the JSON string is missing.");
+          System.out.println(" WARNING : the default pattern of dates in the JSON string is missing and is set to yyyy-MM-dd HH:mm:ss.");
 <%  }
 
     %>

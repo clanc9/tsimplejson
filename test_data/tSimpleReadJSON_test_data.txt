@@ -1,0 +1,50 @@
+{
+  "id": 1,
+  "firstName": "Christian",
+  "lastName": "Lanctôt",
+  "phone" : "850-890-1234",
+  "numberShort": 2,
+  "numberInt": -123,
+  "numberLong": 987654321,
+  "numberDouble": 1234.12345,
+  "numberFloat": 0.0023,
+  "numberBigDecimal": 12.987654321,
+  "active": true,
+  "comment": null,
+  "createdAt": "2022-02-01"
+}
+%
+{
+  "id": 2,
+  "firstName": "Luise",
+  "lastName": null,
+  "numberShort": null,
+  "numberInt": 2,
+  "numberLong": 12345678901234,
+  "numberDouble": -0.4591,
+  "numberFloat": -1234192.1923,
+  "numberBigDecimal": 123456789.123456789,
+  "active": 3,
+  "comment": "This customer \n is \n satisfied",
+  "createdAt": "2022-02-02"
+}
+%
+{
+  "id": "3",
+  "firstName": "\"inside quotes\"",
+  "lastName": "",
+  "numberShort": null,
+  "numberInt": 2.5,
+  "numberLong": null,
+  "numberDouble": null,
+  "numberFloat": null,
+  "numberBigDecimal": null,
+  "active": null,
+  "comment": "invalid int number",
+  "createdAt": "2022-02-03"
+}
+%
+{
+  "id": 4,
+  "lastName": "poirier"
+}
