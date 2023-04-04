@@ -48,7 +48,7 @@ If installation via the studio fails, you can copy the folders directly into the
 
 <br>
 
-For more info on how to use these components, please refer to the [Documentation](https://github.com/clanc9/tsimplejson/tree/main/doc)_
+For more info on how to use these components, please refer to the [Documentation](https://github.com/clanc9/tsimplejson/tree/main/doc)
 
 <br>
 

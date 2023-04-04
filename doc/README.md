@@ -14,8 +14,10 @@ These components map a Talend schema to the attributes at the root of a JSON str
 
 *translates an input row into a single level JSON string*
 
+<br>
 
 ### Features
+
 - choice of which columns to include in the output JSON string
 - possibility to enclose non-null values in quotes in the output JSON string
 - decide whether to include null values in the output JSON string
@@ -24,10 +26,9 @@ These components map a Talend schema to the attributes at the root of a JSON str
 out in the JSON string as yyyy-MM-dd HH:mm:ss
 - use comma as decimal separator for Doubles and Floats
 
+<br>
 
-### Configuration
-
-<u>Basic settings</u>
+### Configuration - Basic settings
 
 The component has 2 modes of operation.
 In the first one, all colums are included in the JSON.  This is the default mode.
@@ -39,9 +40,10 @@ In the first one, all colums are included in the JSON.  This is the default mode
 3. Check **Include null values** if needed.   
  *This option is set by default.*
 4. Check **Convert null values to empty strings** if needed.  
- *Checking this option automatically implies that null values are included, irrespective of whether the box above is checked or not.**
-5. Check **Remove \n, \r, \t from strings** to clean up strings.
+ *Checking this option automatically implies that null values are included, irrespective of whether the box above is checked or not.*
+5. Check **Remove \n, \r, \t from strings** to clean up strings of new lines, carriage returns and tabs.
 
+<br>
 
 In the second mode of operation, the user selects a subset of columns to include in the JSON string.
 
@@ -67,6 +69,7 @@ The component is not startable and it requires an output component.
 
 *scans the attributes at the root of an input JSON string and assigns their values to the corresponding columns of the output schema, if any*
 
+<br>
 
 ### Features
 - exclude one or more columns of the output schema from the parsing of the input JSON string
@@ -74,6 +77,7 @@ The component is not startable and it requires an output component.
 - conversion of the date format during processing. For instance a date value with format MM-dd-yyyy in the JSON can populate a column with format yyyy-MM-dd HH:mm:ss
 - choice of separator for decimal numbers found in the input JSON strings (period or comma)
 
+<br>
 
 ### External libraries
 - [jackson-core-2.13.5.jar](https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core/2.13.5)
@@ -82,10 +86,9 @@ The component is not startable and it requires an output component.
 
 The .jar are included in the component folder. The components have not been tested with other versions of the [Jackson library](https://github.com/FasterXML/jackson).   
 
+<br>
 
-### Configuration
-
-Basic settings
+### Configuration - Basic settings
 
 ![Screenshot of tSimpleReadJSON Basic settings](/doc/images/tsimplereadjson_basic_settings.png)
 
@@ -100,19 +103,18 @@ Basic settings
 3. Click the **Exclude input JSON column from parsing** option if you do not wish the component to change the value of this column.  
  *This option is set by default.*
 
-4. If needed, select the **columns to exclude from parsing**. Use the + button to add a line and select the column from the dropdown list. Use the X button to remove a line.
+4. If needed, select the **columns to exclude from parsing**. Use the + button to add a line and select the column from the dropdown list. Use the X button to remove a line.   
  *The value of an output column that is excluded is copied from the corresponding input column if it exists, otherwise it is null.*
 
 5. Select one of 3 ways to proceed if an error occurs during treatment of the input row:
    - **assign null values** to output columns that do not exist in the input row
    - redirect the input row to a **reject flow**
-   - **die** (i.e. throw an exception). This will interrupt data flow.
-
+   - **die** (i.e. throw an exception). This will interrupt data flow.   
  *The most likely causes of error are either an invalid input JSON string or a JSON value that can not be cast to the output column type.*
 
 <br>
 
-<u>Advanced settings</u>
+### Configuration - Advanced settings
 
 ![Screenshot of tSimpleReadJSON Advanced settings](/doc/images/tsimplereadjson_advanced_settings.png)
 
@@ -125,13 +127,15 @@ Basic settings
 
 <br>
 
-### Global variable
+### Global variables
 
 NB_LINE : the number of rows read by the component.  This is an After variable and it returns an integer.
 
-NB_LINE_OK : the number of rows that had a valid JSON string that could be processed. This is an After variable and it returns an integer.
+NB_LINE_OK : the number of rows that had a valid JSON string. This is an After variable and it returns an integer.
 
-NB_LINE_REJECTED : the number of rows that had an invalid JSON string. This is an After variable and it returns an integer.
+NB_LINE_REJECTED : the number of rows that had an invalid JSON string. This is an After variable and it returns an integer.  
+
+
 
 <br>
 
