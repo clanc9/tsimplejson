@@ -4,30 +4,8 @@
     Talend components to generate and read JSON strings
   </p>
 
+
 <br>
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
 <br>
 
 <!-- ABOUT THE PROJECT -->
@@ -45,7 +23,7 @@ These Talend components are designed for the easy manipulation of JSON strings. 
 * Talend Open Studio for Data Integration.
 To install the studio, please refer to the [Talend documentation](https://help.talend.com/r/en-US/8.0/studio-getting-started-guide-open-studio-for-data-integration/introduction).
 
-> The components were developed on version 8.0.1 of the studio.
+*The components were developed on version 8.0.1 of the studio.*
 
 ### Installation
 
@@ -54,7 +32,7 @@ To install the studio, please refer to the [Talend documentation](https://help.t
 3. Click on ```Apply and Close```.
 4. tSimpleWriteJSON and tSimpleReadJSON should now be available in the **JSON folder of your palette**.
 
-> If installation via the studio fails, you can copy the folders directly into the ```[studio]/plugins/org.talend.designer.components.localprovider_[version]/components``` folder.
+If installation via the studio fails, you can copy the folders directly into the ```[studio]/plugins/org.talend.designer.components.localprovider_[version]/components``` folder.
 
 
 <br>
@@ -63,7 +41,8 @@ To install the studio, please refer to the [Talend documentation](https://help.t
 ## Usage
 
 tSimpleWriteJSON generates a JSON string from an input row. The component is mostly useful to generate a single-level JSON string that is to be sent as the body of an HTTP request, usually via the tRESTClient component.
-> The component does not depend on external JSON libraries such as Jackson, which precludes problems that might arise due to class conflicts during update or migration.
+
+*The component does not depend on external JSON libraries such as Jackson, which precludes problems that might arise due to class conflicts during update or migration.*
 
 <br>
 
@@ -71,7 +50,7 @@ tSimpleReadJSON populates a row from an input JSON string. The component is most
 
 <br>
 
-_For more info on how to use these components, please refer to the [Documentation](https://github.com/clanc9/tsimplejson/tree/main/doc)_
+For more info on how to use these components, please refer to the [Documentation](https://github.com/clanc9/tsimplejson/tree/main/doc)_
 
 <br>
 
@@ -107,7 +86,7 @@ Project Link: [https://github.com/clanc9/tsimplejson](https://github.com/clanc9/
 ## Acknowledgments
 
 * [Othneil Drew](https://github.com/othneildrew/Best-README-Template)
-for the template of this README file.
+for the initial template of this README file.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

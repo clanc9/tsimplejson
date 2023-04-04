@@ -55,7 +55,7 @@ imports="
         // TO DO validate date pattern
 <%  }
     else {  %>
-          System.out.println(" WARNING : the default pattern of dates in the JSON string is missing and is set to yyyy-MM-dd HH:mm:ss.");
+          System.out.println(" WARNING : the default pattern of dates in the JSON string is missing. It set by default to yyyy-MM-dd HH:mm:ss.");
 <%  }
 
     %>
