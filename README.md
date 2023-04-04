@@ -11,7 +11,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-These Talend components are designed for the easy manipulation of JSON strings. More specifically, tSimpleWriteJSON generates a JSON string from an input row and tSimpleReadJSON performs the reverse opration, that is it populates a row from an input JSON string.
+These Talend components are designed for the easy manipulation of JSON strings. More specifically, tSimpleWriteJSON generates a JSON string from an input row and tSimpleReadJSON performs the reverse operation, that is it populates a row from an input JSON string.
 
 <br>
 
@@ -28,11 +28,11 @@ To install the studio, please refer to the [Talend documentation](https://help.t
 ### Installation
 
 1. Copy the tSimpleWriteJSON and tSimpleReadJSON folders into the custom components folder of your studio.
-2. Open  ```Preferences -> Talend -> Components``` in your studio.
+2. Open  ```Preferences -> Talend -> Components``` in your studio.  Make sure the ```user component folder``` points to the folder where you have copied the tSimpleWriteJSON and tSimpleReadJSON folders.
 3. Click on ```Apply and Close```.
 4. tSimpleWriteJSON and tSimpleReadJSON should now be available in the **JSON folder of your palette**.
 
-If installation via the studio fails, you can copy the folders directly into the ```[studio]/plugins/org.talend.designer.components.localprovider_[version]/components``` folder.
+If installation via the studio fails, you can copy the folders directly into the ```[studio]/plugins/org.talend.designer.components.localprovider_[version]/components``` folder.  Restart the studio.
 
 
 <br>
@@ -40,13 +40,11 @@ If installation via the studio fails, you can copy the folders directly into the
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-tSimpleWriteJSON generates a JSON string from an input row. The component is mostly useful to generate a single-level JSON string that is to be sent as the body of an HTTP request, usually via the tRESTClient component.
-
-*The component does not depend on external JSON libraries such as Jackson, which precludes problems that might arise due to class conflicts during update or migration.*
+**tSimpleWriteJSON** generates a JSON string from an input row. The component is mostly useful to generate a single-level JSON string that is to be sent as the body of an HTTP request, usually via the tRESTClient component. *The component does not depend on external JSON libraries such as Jackson, which precludes problems that might arise due to class conflicts during update or migration.*
 
 <br>
 
-tSimpleReadJSON populates a row from an input JSON string. The component is mostly useful to extract data from a single-level JSON string response to an HTTP request.
+**tSimpleReadJSON** populates a row from an input JSON string. The component is mostly useful to extract data from a single-level JSON string response to an HTTP request.
 
 <br>
 

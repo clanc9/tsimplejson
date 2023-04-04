@@ -32,7 +32,7 @@ out in the JSON string as yyyy-MM-dd HH:mm:ss
 The component has 2 modes of operation.
 In the first one, all colums are included in the JSON.  This is the default mode.
 
-![Screenshot of tSimpleWriteJSON Basic settings - Mode 1 - Include all columns](/images/tsimplewritejson_basic_settings1.png)
+![Screenshot of tSimpleWriteJSON Basic settings - Mode 1 - Include all columns](/doc/images/tsimplewritejson_basic_settings1.png)
 
 1. Check **Include all columns in the JSON string** to use this mode.
 2. Check **Convert non-null values to quoted strings** to generate a JSON string in which the value of every attribute is a string.
@@ -45,9 +45,19 @@ In the first one, all colums are included in the JSON.  This is the default mode
 
 In the second mode of operation, the user selects a subset of columns to include in the JSON string.
 
-![Screenshot of tSimpleWriteJSON Basic settings - Mode 2 - Subset of columns](/images/tsimplewritejson_basic_settings2.png)
+![Screenshot of tSimpleWriteJSON Basic settings - Mode 2 - Subset of columns](/doc/images/tsimplewritejson_basic_settings2.png)
 
+<br>
 
+### Global variable
+
+NB_LINE : the number of rows read by the component.  This is an After variable and it returns an integer.
+
+<br>
+
+### Usage
+
+The component is not startable and it requires an output component.
 
 <br>
 <hr>
@@ -75,14 +85,12 @@ The .jar are included in the component folder. The components have not been test
 
 ### Configuration
 
-<u>Basic settings</u>
+Basic settings
 
-![Screenshot of tSimpleReadJSON Basic settings](/images/tsimplereadjson_basic_settings.png)
+![Screenshot of tSimpleReadJSON Basic settings](/doc/images/tsimplereadjson_basic_settings.png)
 
 1. Add the columns which are to be filled with values from the input JSON string to the output **schema**. The names of these output columns must be identical to the names of the attributes in the JSON.  
-
- *Pay close attention to the data types of the columns that are to be extracted from the input JSON. For instance, if the chosen type is int|Integer, then the values in the JSON string must be either an integer or a string representation of an integer, otherwise an error will occur.*
-
+ *Pay close attention to the data types of the columns that are to be extracted from the input JSON. For instance, if the chosen type is int|Integer, then the values in the JSON string must be either an integer or a string representation of an integer, otherwise an error will occur.*   
  *There is no need to add columns for all of the attributes of the input JSON, only for the ones needed.*
 
 
@@ -106,7 +114,7 @@ The .jar are included in the component folder. The components have not been test
 
 <u>Advanced settings</u>
 
-![Screenshot of tSimpleReadJSON Advanced settings](/images/tsimplereadjson_advanced_settings.png)
+![Screenshot of tSimpleReadJSON Advanced settings](/doc/images/tsimplereadjson_advanced_settings.png)
 
 
 1. If the input JSON string contains date values which are to be extracted, specify the date format used in the JSON string. See the [Talend documentation](https://help.talend.com/r/en-US/8.0/data-preparation-user-guide/list-of-date-and-date-time-formats) for available date/time formats.   
@@ -114,6 +122,22 @@ The .jar are included in the component folder. The components have not been test
 
 2. If needed, specify the decimal separator that is used in the input JSON string (period [default], comma, or both).   
  *This applies to columns of types Double, Float or Big Decimal.*
+
+<br>
+
+### Global variable
+
+NB_LINE : the number of rows read by the component.  This is an After variable and it returns an integer.
+
+NB_LINE_OK : the number of rows that had a valid JSON string that could be processed. This is an After variable and it returns an integer.
+
+NB_LINE_REJECTED : the number of rows that had an invalid JSON string. This is an After variable and it returns an integer.
+
+<br>
+
+### Usage
+
+The component is not startable and it requires an output component.
 
 <br>
 
