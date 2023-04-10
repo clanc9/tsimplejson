@@ -129,11 +129,11 @@ The .jar are included in the component folder. The components have not been test
 
 ### Global variables
 
-NB_LINE : the number of rows read by the component.  This is an After variable and it returns an integer.
+NB_LINE: the number of rows read by the component.  This is an After variable and it returns an integer.
 
-NB_LINE_OK : the number of rows that had a valid JSON string. This is an After variable and it returns an integer.
+NB_LINE_OK: the number of rows that had a valid input JSON string and that could be processed. This is an After variable and it returns an integer.
 
-NB_LINE_REJECTED : the number of rows that had an invalid JSON string. This is an After variable and it returns an integer.  
+NB_LINE_ERROR: the number of rows that had an invalid input JSON string or for which an error occurred during processing. This is an After variable and it returns an integer.  
 
 
 
@@ -141,13 +141,13 @@ NB_LINE_REJECTED : the number of rows that had an invalid JSON string. This is a
 
 ### Usage
 
-The component is not startable and it requires an output component.
+The component is not startable.
 
 <br>
 
 ### Example 1 - Extracting first and last names from input JSON string
 
-
+![Screenshot of tSimpleReadJSON job example](/doc/images/tsimplereadjson_example1.png)
 
 1. Drop a tFixedFlowInput with schema ```id``` (integer) and ```json``` (string).
 2. Check ```Use Inline Table```.
