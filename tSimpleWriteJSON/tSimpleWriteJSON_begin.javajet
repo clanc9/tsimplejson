@@ -10,7 +10,9 @@ imports="
     java.util.List
     java.util.Map
 "
+%>
 
+<%
 
   	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
   	INode node = (INode)codeGenArgument.getArgument();
@@ -23,13 +25,13 @@ imports="
     if (!includeAllColumns) {
         List<Map<String, String>> selectedCols = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__COLUMNS_TO_INCLUDE__");
         if (selectedCols.size() == 0) {
-              errorValidation = "At least one column must be included in the JSON string.";
+            errorValidation = "At least one column must be included in the JSON string.";
         }
         else {
             for (Map<String, String> selectedCol : selectedCols) {
                   String col = selectedCol.get("INPUT_COLUMN");
                   if (col.length() == 0) {
-                      validationErrorMessage = "Input column name is missing.";
+                      errorValidation = "Input column name is missing.";
                  }
             }
         }
@@ -37,7 +39,7 @@ imports="
 
 %>
 
-   if ("<%=errorValidation.length()%>" > 0) {
+   if (<%=errorValidation.length()%> > 0) {
         throw new Exception("<%=errorValidation%>");
    }
 

@@ -30,7 +30,7 @@ if(inConns != null && inConns.size() > 0) {
             incomingConnName = inConn.getName();
             IMetadataTable inputMetadataTable = inConn.getMetadataTable();
             for (IMetadataColumn inputCol : inputMetadataTable.getListColumns()) {
-                if (inputCol != null) {
+                if (inputCol != null) {//
                     inColumnSet.add(inputCol.getLabel());
                 }
             }
@@ -146,95 +146,87 @@ com.fasterxml.jackson.databind.JsonNode inputJson_<%=cid%> = null;
           <%
            for(int i = 0 ; i < columnList.size() ; i++) {
                String colLabel = columnList.get(i).getLabel();
-               if (!(excludedColumns.contains(colLabel))) {
-                     String type = columnList.get(i).getTalendType(); %>
+               if (!(excludedColumns.contains(colLabel))) {  %>
 
                      com.fasterxml.jackson.databind.JsonNode node_<%=cid%>_<%=i%> = inputJson_<%=cid%>.get("<%=colLabel%>");
-
-                     if (node_<%=cid%>_<%=i%> != null && node_<%=cid%>_<%=i%>.isValueNode()) {
+                     if (node_<%=cid%>_<%=i%> != null && node_<%=cid%>_<%=i%>.isValueNode()
+                                && !node_<%=cid%>_<%=i%>.isNull() && node_<%=cid%>_<%=i%>.asText().length() > 0) {
 
                         String node_asText_<%=cid%>_<%=i%> = node_<%=cid%>_<%=i%>.asText();
 
-                        if (node_<%=cid%>_<%=i%>.isNull() || node_asText_<%=cid%>_<%=i%>.length() == 0) {
-                        <%  if (jsonFlow) { %>
-                                <%=outgoingConnJSONName%>.<%=colLabel%> = null;
-                        <%  }  %>
-                         }
-                         else {
-                             <%  if (jsonFlow && (type.equals("id_String") || type.equals("id_Character"))) { %>
-                                      <%=outgoingConnJSONName%>.<%=colLabel%> = node_asText_<%=cid%>_<%=i%>;
-                            <%   }
-                                 else {
-                                     if (type.equals("id_Integer") || type.equals("id_Short") || type.equals("id_Long") || type.equals("id_Float") || type.equals("id_Double")) {
-                                         String convert = type.replace("id_", ""); %>
-                                         try {
-                                              <%=convert%> x_<%=cid%>_<%=i%> = <%=convert%>.valueOf(node_asText_<%=cid%>_<%=i%>.trim().replace("<%=decimalSeparator%>", "."));
-                                      <%      if (jsonFlow) {  %>
-                                                  <%=outgoingConnJSONName%>.<%=colLabel%> = x_<%=cid%>_<%=i%>;
-                                    <%        }  %>
-                                         }
-                                         catch (Exception e) {
-                                             throw new Exception("Invalid <%=convert.toLowerCase()%> value in input JSON string: " + e.getMessage());
-                                         }
-                               <%    }
-                                     else if (type.equals("id_Boolean")) { %>
-                                         if (node_asText_<%=cid%>_<%=i%>.trim().toLowerCase().equals("true") || node_asText_<%=cid%>_<%=i%>.trim().equals("1")) {
-                                          <%  if (jsonFlow) {  %>
-                                                  <%=outgoingConnJSONName%>.<%=colLabel%>  = true;
-                                          <%  }  %>
-                                         }
-                                         else if (node_asText_<%=cid%>_<%=i%>.trim().toLowerCase().equals("false") || node_asText_<%=cid%>_<%=i%>.trim().equals("0")) {
-                                         <%  if (jsonFlow) {  %>
-                                                 <%=outgoingConnJSONName%>.<%=colLabel%>  = false;
-                                         <%  }  %>
-                                         }
-                                         else {
-                                             throw new Exception("Invalid boolean value in input JSON: " + node_asText_<%=cid%>_<%=i%>);
-                                         }
-                               <%    }
-                                     else if (type.equals("id_BigDecimal")) { %>
-                                         try {
-                                              BigDecimal y_<%=cid%>_<%=i%> = new java.math.BigDecimal(node_asText_<%=cid%>_<%=i%>.trim().replace("<%=decimalSeparator%>", "."));
-                                        <%    if (jsonFlow) {   %>
-                                                  <%=outgoingConnJSONName%>.<%=colLabel%>  = y_<%=cid%>_<%=i%>;
-                                    <%        }   %>
-                                         }
-                                         catch (Exception e) {
-                                             throw new Exception("Invalid Big Decimal value in input JSON: " + e.getMessage());
-                                         }
-                               <%    }
-                                     else if (type.equals("id_Date")) { %>
-                                         if (TalendDate.isDate(node_asText_<%=cid%>_<%=i%>.trim(), "<%=datePatternInJson%>")) {
-                                        <%   if (jsonFlow) {  %>
-                                                <%=outgoingConnJSONName%>.<%=colLabel%> = TalendDate.parseDate("<%=datePatternInJson%>", node_asText_<%=cid%>_<%=i%>.trim());
-                                        <%   }  %>
-                                         }
-                                         else {
-                                             throw new Exception("Invalid date value in input JSON: " + node_asText_<%=cid%>_<%=i%>);
-                                         }
-                             <%      }
-                                  }  %>
+                  <%
+                        String type = columnList.get(i).getTalendType();
+                        if (type.equals("id_Integer") || type.equals("id_Short") || type.equals("id_Long") || type.equals("id_Float") || type.equals("id_Double")) {
+                             String convert = type.replace("id_", ""); %>
+                             try {
+                                  <%=convert%> x_<%=cid%>_<%=i%> = <%=convert%>.valueOf(node_asText_<%=cid%>_<%=i%>.trim().replace("<%=decimalSeparator%>", "."));
+                          <%      if (jsonFlow) {  %>
+                                      <%=outgoingConnJSONName%>.<%=colLabel%> = x_<%=cid%>_<%=i%>;
+                        <%        }  %>
                              }
-                         }
-                         else {
+                             catch (Exception e) {
+                                 throw new Exception("Invalid <%=convert.toLowerCase()%> value in input JSON: " + e.getMessage());
+                             }
+                   <%    }
+                         else if (type.equals("id_Boolean")) { %>
+                             if (node_asText_<%=cid%>_<%=i%>.trim().toLowerCase().equals("true") || node_asText_<%=cid%>_<%=i%>.trim().equals("1")) {
+                              <%  if (jsonFlow) {  %>
+                                      <%=outgoingConnJSONName%>.<%=colLabel%>  = true;
+                              <%  }  %>
+                             }
+                             else if (node_asText_<%=cid%>_<%=i%>.trim().toLowerCase().equals("false") || node_asText_<%=cid%>_<%=i%>.trim().equals("0")) {
+                             <%  if (jsonFlow) {  %>
+                                     <%=outgoingConnJSONName%>.<%=colLabel%>  = false;
+                             <%  }  %>
+                             }
+                             else {
+                                 throw new Exception("Invalid boolean value in input JSON: " + node_asText_<%=cid%>_<%=i%>);
+                             }
+                   <%    }
+                         else if (type.equals("id_BigDecimal")) { %>
+                             try {
+                                  BigDecimal y_<%=cid%>_<%=i%> = new java.math.BigDecimal(node_asText_<%=cid%>_<%=i%>.trim().replace("<%=decimalSeparator%>", "."));
+                            <%    if (jsonFlow) {   %>
+                                      <%=outgoingConnJSONName%>.<%=colLabel%>  = y_<%=cid%>_<%=i%>;
+                        <%        }   %>
+                             }
+                             catch (Exception e) {
+                                 throw new Exception("Invalid Big Decimal value in input JSON: " + e.getMessage());
+                             }
+                   <%    }
+                         else if (type.equals("id_Date")) { %>
+                             if (TalendDate.isDate(node_asText_<%=cid%>_<%=i%>.trim(), "<%=datePatternInJson%>")) {
+                            <%   if (jsonFlow) {  %>
+                                    <%=outgoingConnJSONName%>.<%=colLabel%> = TalendDate.parseDate("<%=datePatternInJson%>", node_asText_<%=cid%>_<%=i%>.trim());
+                            <%   }  %>
+                             }
+                             else {
+                                 throw new Exception("Invalid date value in input JSON: " + node_asText_<%=cid%>_<%=i%>);
+                             }
+                 <%      }
+                         else if (jsonFlow) { %>
+                                <%=outgoingConnJSONName%>.<%=colLabel%> = node_asText_<%=cid%>_<%=i%>;
+                  <%     } %>
+                   }
+                   else {
                       <%     if (inColumnSet.contains(colLabel) && jsonFlow) {  %>
                                  <%=outgoingConnJSONName%>.<%=colLabel%> = <%=incomingConnName%>.<%=colLabel%>;
                        <%    }
                              else if (jsonFlow) {  %>
                                  <%=outgoingConnJSONName%>.<%=colLabel%> = null;
                        <%    }  %>
-                         }
-                <%   }
-                     // excluded columns
-                     else {
-                         if (inColumnSet.contains(colLabel) && jsonFlow) {  %>
-                             <%=outgoingConnJSONName%>.<%=colLabel%> = <%=incomingConnName%>.<%=colLabel%>;
-                   <%    }
-                         else if (jsonFlow) {  %>
-                             <%=outgoingConnJSONName%>.<%=colLabel%> = null;
-                   <%    }
-                     }
-          }  %> // fin for i
+                   }
+            <%   }
+                 // excluded columns
+                 else {
+                     if (inColumnSet.contains(colLabel) && jsonFlow) {  %>
+                         <%=outgoingConnJSONName%>.<%=colLabel%> = <%=incomingConnName%>.<%=colLabel%>;
+               <%    }
+                     else if (jsonFlow) {  %>
+                         <%=outgoingConnJSONName%>.<%=colLabel%> = null;
+               <%    }
+                 }
+          }  %>
 
           nb_line_ok_<%=cid%>++;
  <%

@@ -18,25 +18,47 @@ CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
 INode node = (INode)codeGenArgument.getArgument();
 String cid = node.getUniqueName();
 
+
 String incomingConnName = null;
+List<IMetadataColumn> inColumnList = null;
 List<? extends IConnection> inConns = node.getIncomingConnections();
 if(inConns != null && inConns.size() > 0) {
     for(IConnection inConn : inConns) {
         if(inConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
             incomingConnName = inConn.getName();
+            INode src = (INode)inConn.getSource();
+            List<IMetadataTable> metadatas2 = src.getMetadataList();
+            if(metadatas2 != null && metadatas2.size() > 0) {
+                IMetadataTable metadata2 = metadatas2.get(0);
+                if(metadata2 != null) {
+                    inColumnList = metadata2.getListColumns();
+                }
+            }
             break;
         }
     }
 }
 
-List<IMetadataColumn> columnList = null;
+String outgoingConnName = null;
+List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
+if(outgoingConns != null && outgoingConns.size() > 0) {
+    for(IConnection outgoingConn : outgoingConns) {
+        if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+            outgoingConnName = outgoingConn.getName();
+            break;
+        }
+    }
+}
+
+List<IMetadataColumn> outColumnList = null;
 List<IMetadataTable> metadatas = node.getMetadataList();
 if(metadatas != null && metadatas.size() > 0) {
     IMetadataTable metadata = metadatas.get(0);
     if(metadata != null) {
-        columnList = metadata.getListColumns();
+        outColumnList = metadata.getListColumns();
     }
 }
+
 
 String includeAllColumnsStr = ElementParameterParser.getValue(node, "__INCLUDE_ALL_COLUMNS__");
 boolean includeAllColumns = (includeAllColumnsStr!=null&&!("").equals(includeAllColumnsStr))?("true").equals(includeAllColumnsStr):false;
@@ -77,6 +99,9 @@ boolean decimalSeparatorIsComma = (decimalSeparatorStr!=null&&!("").equals(decim
 
 %>
 
+System.out.println("<%=inColumnList%>");
+System.out.println("<%=outColumnList%>");
+
 String json_<%=cid%> = "{";
 java.text.DecimalFormat df_<%=cid%> = new java.text.DecimalFormat("0", java.text.DecimalFormatSymbols.getInstance(java.util.Locale.ENGLISH));
 df_<%=cid%>.setMaximumFractionDigits(340);
@@ -84,103 +109,93 @@ df_<%=cid%>.setMaximumFractionDigits(340);
 
 <%
 
-String outgoingConnName = null;
-List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
-if(outgoingConns != null && outgoingConns.size() > 0) {
-    for(IConnection outgoingConn : outgoingConns) {
-        if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
-            outgoingConnName = outgoingConn.getName();
-            break;
-        }
-    }
+if(incomingConnName != null && outgoingConnName != null && inColumnList != null && inColumnList.size() > 0) {
+    for(int i = 0 ; i < inColumnList.size() ; i++) {
+        String colLabel = inColumnList.get(i).getLabel();
+        boolean selectedColumn = columnsToInclude.containsKey(colLabel);
+        if (includeAllColumns || selectedColumn) {
+              if (selectedColumn)  {
+                  String[] params = columnsToInclude.get(colLabel).split(",");
+                  convertToString = params[0].equals("true") ? true : false;
+                  includeNull = params[1].equals("true") ? true : false;
+                  nullToEmpty = params[2].equals("true") ? true : false;
+                  cleanString = params[3].equals("true") ? true : false;
+              }
+          %>
+              if (<%=incomingConnName%>.<%=colLabel%> == null) {
+              <%    if (nullToEmpty) {  %>
+                        json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"\",";
+            <%      }
+                    else if (includeNull) {  %>
+                        json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":null,";
+                <%   }  %>
+              }
+              else {
+          <%      String type = inColumnList.get(i).getTalendType();
+                  if (type.equals("id_String") || type.equals("id_Character")) {
+                      if (cleanString && !type.equals("id_Character")) { %>
+                          json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + (<%=incomingConnName%>.<%=colLabel%>).toString().replace("\"", "\\\"").replaceAll("[\\n\\r\\t]", "") + "\",";
+                <%    }
+                      else {  %>
+                          json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + (<%=incomingConnName%>.<%=colLabel%>).toString().replace("\"", "\\\"") + "\",";
+                <%    }
+                  }
+                  else if (type.equals("id_Date")) {
+                      String pattern = inColumnList.get(i).getPattern();
+                      if (pattern.length() == 0) {
+                          pattern = ElementParameterParser.getValue(node, "__DEFAULT_DATE_PATTERN__");
+                      } %>
+                      json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + TalendDate.formatDate(<%=pattern%>, <%=incomingConnName%>.<%=colLabel%>) + "\",";
+              <%  }
+                  else {
+                      if (type.equals("id_Double") || type.equals("id_BigDecimal") || type.equals("id_Float")) {
+                          if (decimalSeparatorIsComma) { %>
+                              json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + df_<%=cid%>.format(<%=incomingConnName%>.<%=colLabel%>).replace(".", ",") + "\",";
+
+                  <%      }
+                          else {
+                              if (convertToString) { %>
+                                  json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + df_<%=cid%>.format(<%=incomingConnName%>.<%=colLabel%>) + "\",";
+                      <%      }
+                              else {   %>
+                                  json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":" + df_<%=cid%>.format(<%=incomingConnName%>.<%=colLabel%>) + ",";
+                      <%      }
+                          }
+                      }
+                      else {
+                          if (convertToString) { %>
+                              json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + (<%=incomingConnName%>.<%=colLabel%>).toString() + "\",";
+                    <%    }
+                          else {  %>
+                              json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":" + (<%=incomingConnName%>.<%=colLabel%>).toString() + ",";
+                    <%    }
+                      }
+                  }  %>
+              }
+    <%     }
+       }
 }
 
-if(incomingConnName != null && outgoingConnName != null && columnList != null && columnList.size() > 0) {
-    for(int i = 0 ; i < columnList.size() ; i++) {
-        if(i == columnList.size() - 1) { %>
+
+if(outgoingConnName != null && outColumnList != null && outColumnList.size() > 0) {
+    for(int j = 0 ; j < outColumnList.size() ; j++) {
+        String colLabelBis =  outColumnList.get(j).getLabel();
+        if (colLabelBis.equals("simpleJson")) {  %>
             if (json_<%=cid%>.length() > 1) {
-                <%=outgoingConnName%>.<%=columnList.get(i).getLabel()%> = json_<%=cid%>.substring(0, json_<%=cid%>.length()-1) + "}";
+                <%=outgoingConnName%>.simpleJson = json_<%=cid%>.substring(0, json_<%=cid%>.length()-1) + "}";
             }
             else {
-                <%=outgoingConnName%>.<%=columnList.get(i).getLabel()%> = null;
+                <%=outgoingConnName%>.simpleJson = null;
             }
-  <%   } else {
-              String attribute = columnList.get(i).getLabel();
-              boolean selectedColumn = columnsToInclude.containsKey(attribute);
-              /// construction
-              if (includeAllColumns || selectedColumn) {
-                    if (selectedColumn)  {
-                        String[] params = columnsToInclude.get(attribute).split(",");
-                        convertToString = params[0].equals("true") ? true : false;
-                        includeNull = params[1].equals("true") ? true : false;
-                        nullToEmpty = params[2].equals("true") ? true : false;
-                        cleanString = params[3].equals("true") ? true : false;
-                  %>
-                        System.out.println("---------------");
-                        System.out.println("<%=columnsToInclude%>");
-                        System.out.println("attr : <%=attribute%> / sel : <%=selectedColumn%> / convertToString : <%=convertToString%> / includeNull : <%=includeNull%> / nullToEmpty : <%=nullToEmpty%> / cleanString : <%=cleanString%>");
-                  <%
-
-                    }
-              %>
-                    if (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%> == null) {
-                    <%    if (nullToEmpty) {  %>
-                              json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"\",";
-                  <%      }
-                          else if (includeNull) {  %>
-                              json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":null,";
-                      <%   }  %>
-                    }
-                    else {
-                <%      String type = columnList.get(i).getTalendType();
-                        if (type.equals("id_String") || type.equals("id_Character")) {
-                            if (cleanString && !type.equals("id_Character")) { %>
-                                json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString().replaceAll("\"", "\\\"").replaceAll("[\\n\\r\\t]", "") + "\",";
-                      <%    }
-                            else {  %>
-                                json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString().replace("\"", "\\\"") + "\",";
-                      <%    }
-                        }
-                        else if (type.equals("id_Date")) {
-                            String pattern = columnList.get(i).getPattern();
-                            if (pattern.length() == 0) {
-                                pattern = ElementParameterParser.getValue(node, "__DEFAULT_DATE_PATTERN__");
-                            } %>
-                            json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + TalendDate.formatDate(<%=pattern%>, <%=incomingConnName%>.<%=columnList.get(i).getLabel()%>) + "\",";
-                    <%  }
-                        else {
-                            if (type.equals("id_Double") || type.equals("id_BigDecimal") || type.equals("id_Float")) {
-                                if (decimalSeparatorIsComma) { %>
-                                    json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + df_<%=cid%>.format(<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).replace(".", ",") + "\",";
-
-                        <%      }
-                                else {
-                                    if (convertToString) { %>
-                                        json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + df_<%=cid%>.format(<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>) + "\",";
-                            <%      }
-                                    else {   %>
-                                        json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":" + df_<%=cid%>.format(<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>) + ",";
-                            <%      }
-                                }
-                            }
-                            else {
-                                if (convertToString) { %>
-                                    json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":\"" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString() + "\",";
-                          <%    }
-                                else {  %>
-                                    json_<%=cid%> = json_<%=cid%> + "\"<%=attribute%>\":" + (<%=incomingConnName%>.<%=columnList.get(i).getLabel()%>).toString() + ",";
-                          <%    }
-                            }
-                        }  %>
-                    }
-//                  System.out.println("<%=attribute%> = <%=type%>");
-
-        <%   }   %>
-
-            <%=outgoingConnName%>.<%=columnList.get(i).getLabel()%> = <%=incomingConnName%>.<%=columnList.get(i).getLabel()%>;
-<%     }
+    <%  }
+        else if (inColumnList.contains(colLabelBis)) { %>
+            <%=outgoingConnName%>.<%=colLabelBis%> = <%=incomingConnName%>.<%=colLabelBis%>;
+  <%    }
+        else {  %>
+            <%=outgoingConnName%>.<%=colLabelBis%> = null;
+    <%  }
     }
-  }
+}
 %>
 
 nb_line_<%=cid%>++ ;

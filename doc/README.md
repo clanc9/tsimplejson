@@ -74,8 +74,9 @@ The component is not startable and it requires an output component.
 ### Features
 - exclude one or more columns of the output schema from the parsing of the input JSON string
 - reject  input rows to a secondary flow if an error occurs, for instance because the input JSON string is invalid or because the value of a JSON attribute can not be converted to the type assigned to the output column      
-- conversion of the date format during processing. For instance a date value with format MM-dd-yyyy in the JSON can populate a column with format yyyy-MM-dd HH:mm:ss
-- choice of separator for decimal numbers found in the input JSON strings (period or comma)
+- convert date format during processing. For instance a date value with format MM-dd-yyyy in the JSON can populate a column with format yyyy-MM-dd HH:mm:ss
+- interpret 0 (false) and 1 (true) as boolean values
+- choose separator for decimal numbers found in the input JSON strings (period or comma)
 
 <br>
 
@@ -107,9 +108,9 @@ The .jar are included in the component folder. The components have not been test
  *The value of an output column that is excluded is copied from the corresponding input column if it exists, otherwise it is null.*
 
 5. Select one of 3 ways to proceed if an error occurs during treatment of the input row:
+   - redirect the input row to a **reject flow** (default)
    - **assign null values** to output columns that do not exist in the input row
-   - redirect the input row to a **reject flow**
-   - **die** (i.e. throw an exception). This will interrupt data flow.   
+   - **die** (i.e. throw an exception). This will interrupt the data flow.   
  *The most likely causes of error are either an invalid input JSON string or a JSON value that can not be cast to the output column type.*
 
 <br>

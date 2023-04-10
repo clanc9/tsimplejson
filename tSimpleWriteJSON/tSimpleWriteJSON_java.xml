@@ -35,8 +35,8 @@
   <PARAMETERS>
 
     <PARAMETER NAME="SCHEMA" FIELD="SCHEMA_TYPE" REQUIRED="true" NUM_ROW="20">
-        <TABLE READONLY="true">
-            <COLUMN NAME="simpleJson" TYPE="id_String" READONLY="false" CUSTOM="true" />
+        <TABLE READONLY="false">
+            <COLUMN NAME="simpleJson" TYPE="id_String" READONLY="true" CUSTOM="true" />
         </TABLE>
     </PARAMETER>
 
@@ -85,7 +85,6 @@
       REQUIRED="false"
       NUM_ROW="65"
       NOT_SHOW_IF="(INCLUDE_ALL_COLUMNS=='false')"
-      SHOW_IF="(INCLUDE_NULL=='true')"
     >
       <DEFAULT>false</DEFAULT>
     </PARAMETER>
@@ -108,7 +107,7 @@
         REQUIRED="false"
         NUM_ROW="10"
         >
-        <DEFAULT>"yyyy-MM-dd HH:mm:ss"</DEFAULT>
+        <DEFAULT>yyyy-MM-dd HH:mm:ss</DEFAULT>
     </PARAMETER>
 
     <PARAMETER

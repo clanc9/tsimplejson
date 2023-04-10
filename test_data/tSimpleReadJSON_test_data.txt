@@ -11,7 +11,7 @@
   "numberBigDecimal": 12.987654321,
   "active": true,
   "comment": null,
-  "createdAt": "2022-02-01"
+  "createdAt": null
 }
 %
 {
@@ -24,9 +24,9 @@
   "numberDouble": -0.4591,
   "numberFloat": -1234192.1923,
   "numberBigDecimal": 123456789.123456789,
-  "active": 3,
+  "active": 0,
   "comment": "This customer \n is \n satisfied",
-  "createdAt": "2022-02-02"
+  "createdAt": ""
 }
 %
 {
@@ -47,4 +47,39 @@
 {
   "id": 4,
   "lastName": "poirier"
+}
+%
+{
+  "id": 5
+  "lastName": "tremblay",
+  "comment": "invalid JSON string"
+}
+%
+{
+  "id": 6,
+  "lastName": "tremblay",
+  "active": "error because not a boolean"
+}
+%
+{}
+%
+%
+{
+  "customer": {
+      "id": 123,
+      "lastName": "tremblay",
+      "address": {
+                  "streetNumber": 10,
+                  "streetName": "rue des bouleaux"
+      }
+  }
+}
+%
+[
+  { "lastName": "tremblay" },
+  { "lastName" : "pouliot" }
+]
+%
+{
+  "lastName": ["tremblay", "pouliot"]
 }
