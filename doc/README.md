@@ -51,7 +51,7 @@ In the second mode of operation, the user selects a subset of columns to include
 ![Screenshot of tSimpleWriteJSON Basic settings - Mode 2 - Subset of columns](/doc/images/tsimplewritejson_basic_settings2.png)
 
 1. Use the **+** and **X** buttons to add or remove a column from the output JSON, respectively.
-2. Select the **column to add to the output JSON string** from the dropdown list.
+2. Select the **column to add to the output JSON string** from the dropdown list.   
  *Colums can be added only once to the output JSON string, i.e. duplicate entries will be ignored.*
 
 For each column to be added to the output JSON string, treatment options can be specified. See above for details of steps 3 to 6.
