@@ -34,7 +34,7 @@ In the first mode of operation, all colums are included in the JSON.  This is th
 
 ![Screenshot of tSimpleWriteJSON Basic settings - Mode 1 - Include all columns](/doc/images/tsimplewritejson_basic_settings1.png)
 
-1. Select the **output JSON column** from the dropdown list.
+1. Select the **output JSON column** from the dropdown list.   
  *The data type of the output JSON column must be String, otherwise an exception is thrown upon execution of the job.*
 2. Check **Include all columns in the JSON string** to use this mode.
 3. Check **Convert non-null values to quoted strings** to generate a JSON string in which the value of every attribute is a string.
@@ -102,9 +102,9 @@ The component is not startable.
 6. Select ```string``` as the output JSON column.
 7. Uncheck the ```Ìnclude all columns in the JSON string```.
 8. Add the username, dateOfBirth and numberInt columns to the list of JSON attributes.
-9. Check ```Include null``` and ```Null=empty``` for the username and dateOfBirth attributes.  Check ```Quote``` for the numberInt attribute.
+9. Check ```Include null``` and ```Null=empty``` for username, ```Include null```for dateOfBirth, and ```Quote``` for numberInt.
 10. Drop a tRESTClient and connect to the tSimpleWriteJSON.
-11. Enter "https://postman-echo.com" as URL and "/post" as Relative Path.  Select POST as HTTP Method and JSON as Content-Type and Accept Type.
+11. Enter "https://postman-echo.com" as URL and "/post" as Relative Path.  Select POST as HTTP Method and JSON as Content-Type and Accept Type.   
  *This site exposes mock REST endpoints to test HTTP requests.*
 12. Drop a tLogRow and connect it to the Response flow of the tRESTClient.
 13. Run the job.
