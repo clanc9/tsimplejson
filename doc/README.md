@@ -18,30 +18,31 @@ These components map a Talend schema to the attributes at the root of a JSON str
 
 ### Features
 
-- choice of which columns to include in the output JSON string
-- possibility to enclose non-null values in quotes in the output JSON string
+- choose which columns to include in the output JSON string
+- enclose non-null values in quotes in the output JSON string
 - decide whether to include null values in the output JSON string
 - suppress \n, \r and \t characters from string values
-- conversion of date format during processing, for instance an input column with format MM-dd-yyyy can be written
-out in the JSON string as yyyy-MM-dd HH:mm:ss
-- use comma as decimal separator for Doubles and Floats
+- use comma as decimal separator for Doubles, Floats and BigDecimals
 
 <br>
 
 ### Configuration - Basic settings
 
-The component has 2 modes of operation.
-In the first one, all colums are included in the JSON.  This is the default mode.
+The component has 2 modes of operation. In both cases, the output schema must include a column of type String to contain the JSON string that is generated.  
+
+In the first mode of operation, all colums are included in the JSON.  This is the default mode.
 
 ![Screenshot of tSimpleWriteJSON Basic settings - Mode 1 - Include all columns](/doc/images/tsimplewritejson_basic_settings1.png)
 
-1. Check **Include all columns in the JSON string** to use this mode.
-2. Check **Convert non-null values to quoted strings** to generate a JSON string in which the value of every attribute is a string.
-3. Check **Include null values** if needed.   
+1. Select the **output JSON column** from the dropdown list.  For convenience, the component adds by default a column named simpleJson to the output schema.  This column can be edited.
+ *The data type of the output JSON column must be String, otherwise an exception is thrown upon execution of the job.*
+2. Check **Include all columns in the JSON string** to use this mode.
+3. Check **Convert non-null values to quoted strings** to generate a JSON string in which the value of every attribute is a string.
+4. Check **Include null values** if needed.   
  *This option is set by default.*
-4. Check **Convert null values to empty strings** if needed.  
+5. Check **Convert null values to empty strings** if needed.  
  *Checking this option automatically implies that null values are included, irrespective of whether the box above is checked or not.*
-5. Check **Remove \n, \r, \t from strings** to clean up strings of new lines, carriage returns and tabs.
+6. Check **Remove \n, \r, \t from strings** to clean up strings of new lines, carriage returns and tabs.
 
 <br>
 
@@ -49,17 +50,64 @@ In the second mode of operation, the user selects a subset of columns to include
 
 ![Screenshot of tSimpleWriteJSON Basic settings - Mode 2 - Subset of columns](/doc/images/tsimplewritejson_basic_settings2.png)
 
+1. Use the **+** and **X** buttons to add or remove a column from the output JSON, respectively.
+2. Select the **column to add to the output JSON string** from the dropdown list.
+ *Colums can be added only once to the output JSON string, i.e. duplicate entries will be ignored.*
+
+For each column to be added to the output JSON string, treatment options can be specified. See above for details of steps 3 to 6.
+
+<br>
+
+### Configuration - Advanced settings
+
+![Screenshot of tSimpleWriteJSON Advanced Settings](/doc/images/tsimplewritejson_advanced_settings.png)
+
+<br>
+
+1. Specify the default date format to be used in the JSON string **in case it is missing for one or more columns of the input schema**. See the [Talend documentation](https://help.talend.com/r/en-US/8.0/data-preparation-user-guide/list-of-date-and-date-time-formats) for available date/time formats.   
+
+2. Check this box to use a comma as decimal separator and enclose Double, Float and BigDecimal values in double quotes in the output JSON string.   
+
 <br>
 
 ### Global variable
 
-NB_LINE : the number of rows read by the component.  This is an After variable and it returns an integer.
+NB_LINE : the number of rows processed by the component.  This is an After variable and it returns an integer.
 
 <br>
 
 ### Usage
 
-The component is not startable and it requires an output component.
+The component is not startable.
+
+<br>
+
+### Example 1 - Generating the JSON payload of an HTTP request
+
+![Screenshot of tSimpleWriteJSON Example](/doc/images/tsimplewritejson_example1.png)
+
+<br>
+
+1. Drop a tFixedFlowInput with schema ```username``` (string), ```dateOfBirth``` (date), ```numberInt``` (integer) and ```notIncluded``` (string).
+2. Check ```Use Single Table```.
+3. Specify the following input row:  
+    ```
+    username = "newborn"
+    dateOfBirth = TalendDate.getCurrentDate()
+    numberInt = 100
+    notRelevant = "wrong"
+    ```
+4. Drop a tSimpleWriteJSON and connect to the tFixedFlowInput.  
+5. Edit the output schema of the tSimpleWriteJSON to contain a ```body``` (document) and a ```string``` (string) columns.
+6. Select ```string``` as the output JSON column.
+7. Uncheck the ```Ìnclude all columns in the JSON string```.
+8. Add the username, dateOfBirth and numberInt columns to the list of JSON attributes.
+9. Check ```Include null``` and ```Null=empty``` for the username and dateOfBirth attributes.  Check ```Quote``` for the numberInt attribute.
+10. Drop a tRESTClient and connect to the tSimpleWriteJSON.
+11. Enter "https://postman-echo.com" as URL and "/post" as Relative Path.  Select POST as HTTP Method and JSON as Content-Type and Accept Type.
+ *This site exposes mock REST endpoints to test HTTP requests.*
+12. Drop a tLogRow and connect it to the Response flow of the tRESTClient.
+13. Run the job.
 
 <br>
 <hr>
@@ -99,7 +147,7 @@ The .jar are included in the component folder. The components have not been test
 
 
 2. Select the **input JSON column** from the dropdown list.  
- *The data type of this column must be String, otherwise an exception is thrown upon execution of the job.*
+ *The data type of the input JSON column must be String, otherwise an exception is thrown upon execution of the job.*
 
 3. Click the **Exclude input JSON column from parsing** option if you do not wish the component to change the value of this column.  
  *This option is set by default.*
@@ -111,6 +159,7 @@ The .jar are included in the component folder. The components have not been test
    - redirect the input row to a **reject flow** (default)
    - **assign null values** to output columns that do not exist in the input row
    - **die** (i.e. throw an exception). This will interrupt the data flow.   
+
  *The most likely causes of error are either an invalid input JSON string or a JSON value that can not be cast to the output column type.*
 
 <br>
@@ -120,11 +169,11 @@ The .jar are included in the component folder. The components have not been test
 ![Screenshot of tSimpleReadJSON Advanced settings](/doc/images/tsimplereadjson_advanced_settings.png)
 
 
-1. If the input JSON string contains date values which are to be extracted, specify the date format used in the JSON string. See the [Talend documentation](https://help.talend.com/r/en-US/8.0/data-preparation-user-guide/list-of-date-and-date-time-formats) for available date/time formats.   
+1. If the input JSON string contains date values which are to be extracted, specify the date format used in the JSON string (default is yyyy-MM-dd HH:mm:ss). See the [Talend documentation](https://help.talend.com/r/en-US/8.0/data-preparation-user-guide/list-of-date-and-date-time-formats) for available date/time formats.   
  *Please note that the date format in the output column is specified in the Talend schema.  If this format is different than the one used in the input JSON string, then the component attempts to make the conversion.*
 
 2. If needed, specify the decimal separator that is used in the input JSON string (period [default], comma, or both).   
- *This applies to columns of types Double, Float or Big Decimal.*
+ *This applies to columns of types Double, Float or BigDecimal.*
 
 <br>
 
