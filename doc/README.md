@@ -28,13 +28,13 @@ These components map a Talend schema to the attributes at the root of a JSON str
 
 ### Configuration - Basic settings
 
-The component has 2 modes of operation. In both cases, the output schema must include a column of type String to contain the JSON string that is generated.  
+The component has 2 modes of operation. In both cases, the output schema must include a column of type String to contain the JSON string that is generated. For convenience, the component adds by default a column named simpleJson to the output schema.  This column can be edited.
 
 In the first mode of operation, all colums are included in the JSON.  This is the default mode.
 
 ![Screenshot of tSimpleWriteJSON Basic settings - Mode 1 - Include all columns](/doc/images/tsimplewritejson_basic_settings1.png)
 
-1. Select the **output JSON column** from the dropdown list.  For convenience, the component adds by default a column named simpleJson to the output schema.  This column can be edited.
+1. Select the **output JSON column** from the dropdown list.
  *The data type of the output JSON column must be String, otherwise an exception is thrown upon execution of the job.*
 2. Check **Include all columns in the JSON string** to use this mode.
 3. Check **Convert non-null values to quoted strings** to generate a JSON string in which the value of every attribute is a string.
