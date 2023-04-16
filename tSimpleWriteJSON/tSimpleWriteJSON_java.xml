@@ -36,8 +36,17 @@
 
     <PARAMETER NAME="SCHEMA" FIELD="SCHEMA_TYPE" REQUIRED="true" NUM_ROW="20">
         <TABLE READONLY="false">
-            <COLUMN NAME="simpleJson" TYPE="id_String" READONLY="true" CUSTOM="true" />
+            <COLUMN NAME="simpleJson" TYPE="id_String" READONLY="false" CUSTOM="false" />
         </TABLE>
+    </PARAMETER>
+
+    <PARAMETER
+      NAME="OUTPUT_JSON_COLUMN"
+      FIELD="COLUMN_LIST"
+      REQUIRED="true"
+      NUM_ROW="25"
+    >
+      <DEFAULT>simpleJson</DEFAULT>
     </PARAMETER>
 
     <PARAMETER

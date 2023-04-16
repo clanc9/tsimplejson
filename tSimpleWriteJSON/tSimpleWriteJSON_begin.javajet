@@ -22,16 +22,55 @@ imports="
     boolean includeAllColumns = (includeAllColumnsStr!=null&&!("").equals(includeAllColumnsStr))?("true").equals(includeAllColumnsStr):false;
 
     String errorValidation = "";
+
+    String outputJsonColumn = ElementParameterParser.getValue(node, "__OUTPUT_JSON_COLUMN__");
+    String outputJsonColumnType = "";
+
+    if (outputJsonColumn != null && outputJsonColumn.length() > 0) {
+        List<IMetadataColumn> outCols = null;
+        List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
+        if(outgoingConns != null && outgoingConns.size() > 0) {
+            for(IConnection outgoingConn : outgoingConns) {
+                if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+                    IMetadataTable metadata = outgoingConn.getMetadataTable();
+                    outCols = metadata.getListColumns();
+                    break;
+                }
+            }
+        }
+        if (outCols != null) {
+            for (IMetadataColumn col : outCols) {
+                if (col.getLabel().equals(outputJsonColumn)) {
+                      outputJsonColumnType = col.getTalendType();
+                      break;
+                }
+            }
+        }
+    }
+
+    if (!outputJsonColumnType.equals("id_String")) {
+          errorValidation = "The data type of the output JSON column must be String.";
+    }
+
+    String defaultDatePattern = ElementParameterParser.getValue(node, "__DEFAULT_DATE_PATTERN__");
+    if (defaultDatePattern != null && defaultDatePattern.replace("\"", "").length() > 0) {
+        // TO DO validate date pattern
+    }
+    else {  %>
+        System.out.println(" WARNING : the default pattern of dates in input columns is missing. It is set by default to yyyy-MM-dd HH:mm:ss.");
+<%  }
+
     if (!includeAllColumns) {
         List<Map<String, String>> selectedCols = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__COLUMNS_TO_INCLUDE__");
         if (selectedCols.size() == 0) {
-            errorValidation = "At least one column must be included in the JSON string.";
+            errorValidation = errorValidation + " At least one column must be included in the JSON string.";
         }
         else {
             for (Map<String, String> selectedCol : selectedCols) {
                   String col = selectedCol.get("INPUT_COLUMN");
                   if (col.length() == 0) {
-                      errorValidation = "Input column name is missing.";
+                      errorValidation = errorValidation + " Input column name is missing.";
+                      break;
                  }
             }
         }
@@ -39,7 +78,7 @@ imports="
 
 %>
 
-   if (<%=errorValidation.length()%> > 0) {
+   if (<%=errorValidation.length() > 0%>) {
         throw new Exception("<%=errorValidation%>");
    }
 

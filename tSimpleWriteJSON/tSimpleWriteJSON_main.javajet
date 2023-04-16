@@ -10,6 +10,7 @@ imports="
       java.util.List
       java.util.Map
       java.util.HashMap
+      java.util.ArrayList
 "
 %>
 
@@ -59,6 +60,7 @@ if(metadatas != null && metadatas.size() > 0) {
     }
 }
 
+String outputJsonColumn = ElementParameterParser.getValue(node, "__OUTPUT_JSON_COLUMN__");
 
 String includeAllColumnsStr = ElementParameterParser.getValue(node, "__INCLUDE_ALL_COLUMNS__");
 boolean includeAllColumns = (includeAllColumnsStr!=null&&!("").equals(includeAllColumnsStr))?("true").equals(includeAllColumnsStr):false;
@@ -93,14 +95,17 @@ else {
     }
 }
 
+String defaultDatePattern = "yyyy-MM-dd HH:mm:ss";
+String defaultDatePatternParam = ElementParameterParser.getValue(node, "__DEFAULT_DATE_PATTERN__");
+if (defaultDatePatternParam != null && defaultDatePatternParam.replace("\"", "").length() > 0) {
+    defaultDatePattern = defaultDatePatternParam.replace("\"", "");
+}
+
 String decimalSeparatorStr = ElementParameterParser.getValue(node, "__DECIMAL_SEPARATOR_IS_COMMA__");
 boolean decimalSeparatorIsComma = (decimalSeparatorStr!=null&&!("").equals(decimalSeparatorStr))?("true").equals(decimalSeparatorStr):false;
 
 
 %>
-
-System.out.println("<%=inColumnList%>");
-System.out.println("<%=outColumnList%>");
 
 String json_<%=cid%> = "{";
 java.text.DecimalFormat df_<%=cid%> = new java.text.DecimalFormat("0", java.text.DecimalFormatSymbols.getInstance(java.util.Locale.ENGLISH));
@@ -109,9 +114,11 @@ df_<%=cid%>.setMaximumFractionDigits(340);
 
 <%
 
+ArrayList<String> inCols = new ArrayList<String>();
 if(incomingConnName != null && outgoingConnName != null && inColumnList != null && inColumnList.size() > 0) {
     for(int i = 0 ; i < inColumnList.size() ; i++) {
         String colLabel = inColumnList.get(i).getLabel();
+        inCols.add(colLabel);
         boolean selectedColumn = columnsToInclude.containsKey(colLabel);
         if (includeAllColumns || selectedColumn) {
               if (selectedColumn)  {
@@ -141,11 +148,11 @@ if(incomingConnName != null && outgoingConnName != null && inColumnList != null 
                 <%    }
                   }
                   else if (type.equals("id_Date")) {
-                      String pattern = inColumnList.get(i).getPattern();
+                      String pattern = inColumnList.get(i).getPattern().replace("\"", "");
                       if (pattern.length() == 0) {
-                          pattern = ElementParameterParser.getValue(node, "__DEFAULT_DATE_PATTERN__");
+                          pattern = defaultDatePattern;
                       } %>
-                      json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + TalendDate.formatDate(<%=pattern%>, <%=incomingConnName%>.<%=colLabel%>) + "\",";
+                      json_<%=cid%> = json_<%=cid%> + "\"<%=colLabel%>\":\"" + TalendDate.formatDate("<%=pattern%>", <%=incomingConnName%>.<%=colLabel%>) + "\",";
               <%  }
                   else {
                       if (type.equals("id_Double") || type.equals("id_BigDecimal") || type.equals("id_Float")) {
@@ -180,15 +187,15 @@ if(incomingConnName != null && outgoingConnName != null && inColumnList != null 
 if(outgoingConnName != null && outColumnList != null && outColumnList.size() > 0) {
     for(int j = 0 ; j < outColumnList.size() ; j++) {
         String colLabelBis =  outColumnList.get(j).getLabel();
-        if (colLabelBis.equals("simpleJson")) {  %>
+        if (colLabelBis.equals(outputJsonColumn) && outColumnList.get(j).getTalendType().equals("id_String")) {  %>
             if (json_<%=cid%>.length() > 1) {
-                <%=outgoingConnName%>.simpleJson = json_<%=cid%>.substring(0, json_<%=cid%>.length()-1) + "}";
+                <%=outgoingConnName%>.<%=outputJsonColumn%> = json_<%=cid%>.substring(0, json_<%=cid%>.length()-1) + "}";
             }
             else {
-                <%=outgoingConnName%>.simpleJson = null;
+                <%=outgoingConnName%>.<%=outputJsonColumn%> = null;
             }
     <%  }
-        else if (inColumnList.contains(colLabelBis)) { %>
+        else if (inCols.contains(colLabelBis)) { %>
             <%=outgoingConnName%>.<%=colLabelBis%> = <%=incomingConnName%>.<%=colLabelBis%>;
   <%    }
         else {  %>

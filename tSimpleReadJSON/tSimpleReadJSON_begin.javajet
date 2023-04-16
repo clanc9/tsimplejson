@@ -17,11 +17,8 @@ imports="
   	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
   	INode node = (INode)codeGenArgument.getArgument();
   	String cid = node.getUniqueName();
-%>
 
-    String errorValidation_<%=cid%> = "";
-
-  <%
+    String errorValidation = "";
     String inputJsonColumn = ElementParameterParser.getValue(node, "__INPUT_JSON_COLUMN__");
     String inputJsonColumnType = "";
     if (inputJsonColumn != null && inputJsonColumn.length() > 0) {
@@ -46,22 +43,22 @@ imports="
         }
     }
 
-    if (!inputJsonColumnType.equals("id_String")) { %>
-          errorValidation_<%=cid%> = "The data type of the input JSON column must be String.";
-  <%  }
+    if (!inputJsonColumnType.equals("id_String")) {
+          errorValidation = "The data type of the input JSON column must be String.";
+    }
 
     String datePatternInJson = ElementParameterParser.getValue(node, "__DATE_PATTERN_IN_JSON__");
-    if (datePatternInJson != null && datePatternInJson.replace("\"", "").length() > 0) { %>
+    if (datePatternInJson != null && datePatternInJson.replace("\"", "").length() > 0) {
         // TO DO validate date pattern
-<%  }
+    }
     else {  %>
           System.out.println(" WARNING : the default pattern of dates in the JSON string is missing. It is set by default to yyyy-MM-dd HH:mm:ss.");
 <%  }
 
     %>
 
-   if (errorValidation_<%=cid%>.length() > 0) {
-        throw new Exception(errorValidation_<%=cid%>);
+   if (<%=errorValidation.length() > 0%>) {
+        throw new Exception("<%=errorValidation%>");
    }
 
    int nb_line_<%=cid%> = 0;
