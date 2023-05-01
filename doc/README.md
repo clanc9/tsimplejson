@@ -121,7 +121,7 @@ The component is not startable.
 
 ### Features
 - exclude one or more columns of the output schema from the parsing of the input JSON string
-- reject  input rows to a secondary flow if an error occurs, for instance because the input JSON string is invalid or because the value of a JSON attribute can not be converted to the type assigned to the output column      
+- reject input rows to a secondary flow if an error occurs, for instance because the input JSON string is invalid or because the value of a JSON attribute can not be converted to the type assigned to the output column      
 - convert date format during processing. For instance a date value with format MM-dd-yyyy in the JSON can populate a column with format yyyy-MM-dd HH:mm:ss
 - interpret 0 (false) and 1 (true) as boolean values
 - choose separator for decimal numbers found in the input JSON strings (period or comma)
